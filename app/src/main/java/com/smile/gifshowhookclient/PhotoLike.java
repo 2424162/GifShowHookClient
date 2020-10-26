@@ -152,6 +152,7 @@ public class PhotoLike implements IXposedHookLoadPackage {
                                     Object button = param.thisObject;
 
                                     final View haha = (View) button;
+
                                     Log.d(tag,"是否可以点击："+haha.isClickable());
                                     Log.d(tag, button.toString());
                                     if (LikeLock1 == false) {
@@ -203,12 +204,13 @@ public class PhotoLike implements IXposedHookLoadPackage {
                                 if(button.toString().contains("follow")) {
                                     final View haha = (View) button;
                                     Log.d(tag, "关注按钮");
+                                    Log.d(tag,"点击操作："+haha.isClickable());
 
                                     new Handler().postDelayed(new Runnable() {
                                         @Override
                                         public void run() {
                                             Log.d(tag,"===="+haha.toString());
-                                            haha.performClick();
+                                            Log.d(tag,haha.performClick()+"");
                                             Log.d(tag,"点完关注");
                                         }
                                     }, 2000);
