@@ -44,130 +44,80 @@ public class SendMsg implements IXposedHookLoadPackage {
     public static boolean LikeLock1 = false;
     public static Boolean photoclick = false;
     public int num = 33;
-    public Context context ;
-    public  Object sendm;
-    public boolean isInjecter(String flag) {
-        try {
-            if (TextUtils.isEmpty(flag)) return false;
-            Field methodCacheField = XposedHelpers.class.getDeclaredField("methodCache");
+    public Context context;
+    public Object sendm;
 
-            methodCacheField.setAccessible(true);
-            HashMap<String, Method> methodCache = (HashMap<String, Method>) methodCacheField.get(null);
-            Method method=XposedHelpers.findMethodBestMatch(Application.class,"onCreate");
-            String key=String.format("%s#%s",flag,method.getName());
-            if (methodCache.containsKey(key)) return true;
-            methodCache.put(key, method);
-            return false;
-        } catch (Throwable e) {
-            e.printStackTrace();
-        }
-        return false;
-    }
+
     public void handleLoadPackage(final XC_LoadPackage.LoadPackageParam loadPackageParam) throws Throwable {
         if (!loadPackageParam.processName.equals("com.smile.gifmaker")) {
             Log.d(tag, "过滤程序：" + loadPackageParam.packageName.toString());
             return;
         }
-        if (isInjecter(this.getClass().getName())) {
-            return;
-        }
-
         XposedHelpers.findAndHookMethod(Application.class, "attach", Context.class, new XC_MethodHook() {
             @Override
             protected void afterHookedMethod(final MethodHookParam param) throws Throwable {
-                    if (param.args != null && param.args.length > 0) {
-                        context = (Context) param.args[0];
-                        XposedBridge.log("proceessID4:"+android.os.Process.myPid());
-                }}});
+                if (param.args != null && param.args.length > 0) {
+                    context = (Context) param.args[0];
+                }
+            }
+        });
         XposedHelpers.findAndHookMethod(ClassLoader.class, "loadClass", String.class, new XC_MethodHook() {
             @Override
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                 final Class<?> cls = (Class<?>) param.getResult();
-//                if (param.args[0].toString().contains("com.yxcorp.plugin.message.b.b.p")) {
-//
-//                    findAndHookConstructor(cls, int.class, String.class, String.class, new XC_MethodHook() {
-//                        @Override
-//                        protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-//
-//                            super.afterHookedMethod(param);
-//                            String user_id = "1547601"+num;
-//                            String context ="嘻嘻嘻嘻嘻";
-//                            num = num +1;
-//                            Log.d(tag,"用户："+num);
-//                            param.args[1] = user_id;
-//                            param.args[2] = context;
-//                            XposedBridge.log("proceessIDta1:"+android.os.Process.myPid());
-//                        }
-//                    });
-//
-//                }
+                if (param.args[0].toString().contains("com.yxcorp.plugin.message.b.b.p")) {
+                    findAndHookConstructor(cls, int.class, String.class, String.class, new XC_MethodHook() {
+                        @Override
+                        protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                            super.afterHookedMethod(param);
+                            String user_id = "1547601" + num;
+                            String context = "嘻嘻嘻嘻嘻";
+                            num = num + 1;
+                            Log.d(tag, "用户：" + num);
+                            param.args[1] = user_id;
+                            param.args[2] = context;
+                        }
+                    });
 
-                if(param.args[0].toString().equals("com.yxcorp.utility.ay")){
-                    findAndHookMethod(cls,"a", EditText.class, new XC_MethodHook() {
+                }
+
+                if (param.args[0].toString().equals("com.yxcorp.utility.ay")) {
+                    findAndHookMethod(cls, "a", EditText.class, new XC_MethodHook() {
                         @Override
                         protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                             super.afterHookedMethod(param);
                             EditText haha = new EditText(context);
                             haha.setText("12312312321");
                             param.setResult(haha.getText());
-
-//                            try {
-////                                PackageInfo packageInfo = context.getPackageManager().getPackageInfo(context.getPackageName(), PackageManager.GET_SIGNATURES);
-////                                Signature[] signatures = packageInfo.signatures;
-////                                Log.d(tag,""+signatures[0].toCharsString());
-////                            }
-////                            catch (PackageManager.NameNotFoundException e) {
-////                                e.printStackTrace();
-////                            }
-               }
+                        }
                     });
 
                 }
-                if(param.args[0].toString().equals("com.yxcorp.plugin.message.chat.presenter.MsgChatKeyboardPresenter")){
-                    Log.d(tag,"私信类："+param.thisObject);
-                    final Constructor c  = cls.getDeclaredConstructor();
+                if (param.args[0].toString().equals("com.yxcorp.plugin.message.chat.presenter.MsgChatKeyboardPresenter")) {
+                    Log.d(tag, "私信类：" + param.thisObject);
+                    final Constructor c = cls.getDeclaredConstructor();
                     c.setAccessible(true);
-                    XposedHelpers.findAndHookConstructor(cls, new XC_MethodHook() {
-                        @Override
-                        protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-                            super.afterHookedMethod(param);
-                            Log.d(tag,"hook的类型");
-                            Log.d(tag,""+(param.thisObject == null));
-                            Log.d(tag,"开机进程"+android.os.Process.myPid());
-                            sendm = param.thisObject;
-                            Log.d(tag,"开机初始化："+sendm.toString());
-                        }
-                    });
                     XposedHelpers.findAndHookMethod(cls, "sendMsg", new XC_MethodHook() {
                         @Override
                         protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                             super.afterHookedMethod(param);
                             sendm = param.thisObject;
-
-                            Log.d(tag,"手动执行"+sendm.toString());
-                            Log.d(tag,"手动进程"+android.os.Process.myPid());
                         }
                     });
-                    Log.d(tag,"总的内部类进程"+android.os.Process.myPid());
-                    new Handler(context.getMainLooper()).postDelayed(new Runnable(){
+                    new Handler(context.getMainLooper()).postDelayed(new Runnable() {
                         public void run() {
-                            Log.d(tag,"handler进程id:"+android.os.Process.myPid());
-                            XposedBridge.log("proceessID3:"+android.os.Process.myPid());
-                            Log.d(tag,"开始--------------------------");
+                            Log.d(tag, "开始--------------------------");
                             try {
                                 Method method = cls.getDeclaredMethod("sendMsg");
-
                                 Object nsend = cls.newInstance();
-
                                 method.setAccessible(true);
                                 method.invoke(nsend);
-                                Log.d(tag,"fanshewan+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+_+");
                             } catch (IllegalAccessException e) {
                                 e.printStackTrace();
                             } catch (NoSuchMethodException e) {
                                 e.printStackTrace();
                             } catch (InvocationTargetException e) {
-                               e.printStackTrace();
+                                e.printStackTrace();
                             } catch (InstantiationException e) {
                                 e.printStackTrace();
                             }
